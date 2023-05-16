@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  csv-api:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "npm start"
+    environment:
+      - DEBUG=csvformatter:*
