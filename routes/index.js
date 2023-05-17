@@ -7,16 +7,6 @@ axios.defaults.baseURL = 'https://echo-serv.tbxnet.com/v1/secret'
 axios.defaults.headers.common.Authorization = 'Bearer aSuperSecretKey'
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 
-async function getFiles () {
-  try {
-    const response = await axios.get('/files')
-    console.log(response.data)
-    return response.data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 const checkUndefined = (value) => {
   if (value.text === undefined) {
     return null
@@ -44,21 +34,42 @@ async function getSingleFile (fileName) {
   try {
     const response = await axios.get('/file/' + fileName)
     const csvData = csvParser.parse(response.data, { output: 'objects' })
-    const processedFile = parseLines(csvData)
-    console.log(processedFile)
-    console.log(typeof processedFile)
+    const processedData = csvData !== [] ? parseLines(csvData) : []
+    const processedFile = {
+      file: fileName,
+      lines: processedData
+    }
+    console.log(processedData)
+    console.log(typeof processedData)
     return processedFile
   } catch (error) {
     console.error(error)
   }
 }
 
+const getFiles = async () => {
+  try {
+    const response = await axios.get('/files')
+    return response.data.files
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
+
+const parseFiles = async () => {
+  const files = await getFiles()
+  const parsedFiles = await Promise.all(files.map(async (file) => {
+    return await getSingleFile(file)
+  }))
+  return parsedFiles
+}
+
 router.get('/files/data', async function (req, res, next) {
   res.type('application/json')
   res.status(200).send(
-    await getSingleFile('test2.csv')
+    await parseFiles()
   )
-  console.log('works')
 })
 
 module.exports = router
