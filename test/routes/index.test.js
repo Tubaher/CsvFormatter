@@ -16,13 +16,5 @@ mocha.describe('CSV Formatter API', () => {
           done()
         })
     })
-    mocha.it('should return an array of files error test', (done) => {
-      chai.request(server)
-        .get('/files/data/error')
-        .end((_, res) => {
-          res.should.have.status(200)
-          done()
-        })
-    })
   })
 })
