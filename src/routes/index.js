@@ -7,12 +7,19 @@ axios.defaults.baseURL = 'https://echo-serv.tbxnet.com/v1/secret'
 axios.defaults.headers.common.Authorization = 'Bearer aSuperSecretKey'
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 
-const checkUndefined = (value) => {
-  if (value.text === undefined) {
+const isNumber = (str) => {
+  return !isNaN(str) && !isNaN(parseFloat(str))
+}
+
+const regex = /[0-9A-Fa-f]{32}/g
+const isHex = (number) => { return number.match(regex) }
+
+const checkErrors = (value) => {
+  if (value.text === undefined || value.text === '') {
     return null
-  } else if (value.number === undefined) {
+  } else if (value.number === undefined || value.number === '' || !isNumber(value.number)) {
     return null
-  } else if (value.hex === undefined) {
+  } else if (value.hex === undefined || value.hex === '' || !isHex(value.hex)) {
     return null
   } else {
     return value
@@ -21,7 +28,7 @@ const checkUndefined = (value) => {
 
 const parseLines = (csvData) => {
   return csvData.reduce((previusLine, currentLine) => {
-    const noErrorsLine = checkUndefined(currentLine)
+    const noErrorsLine = checkErrors(currentLine)
     if (noErrorsLine) {
       return [...previusLine, { text: noErrorsLine.text, number: noErrorsLine.number, hex: noErrorsLine.hex }]
     } else {
@@ -39,11 +46,9 @@ async function getSingleFile (fileName) {
       file: fileName,
       lines: processedData
     }
-    console.log(processedData)
-    console.log(typeof processedData)
     return processedFile
   } catch (error) {
-    console.error(error)
+    return {}
   }
 }
 
@@ -52,16 +57,18 @@ const getFiles = async () => {
     const response = await axios.get('/files')
     return response.data.files
   } catch (error) {
-    console.error(error)
     return []
   }
 }
 
 const parseFiles = async () => {
   const files = await getFiles()
-  const parsedFiles = await Promise.all(files.map(async (file) => {
-    return await getSingleFile(file)
-  }))
+  const parsedFiles = await files.reduce(async (previousFilePromise, currentFile) => {
+    const previousFile = await previousFilePromise
+    const parsedFile = await getSingleFile(currentFile)
+    return Object.keys(parsedFile).length !== 0 ? [...previousFile, parsedFile] : previousFile
+  }, [])
+
   return parsedFiles
 }
 
