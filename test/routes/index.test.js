@@ -13,6 +13,21 @@ mocha.describe('CSV Formatter API', () => {
         .get('/files/data')
         .end((_, res) => {
           res.should.have.status(200)
+          // eslint-disable-next-line no-unused-expressions
+          res.should.to.be.json
+          res.body.should.be.a('array')
+          res.body.length.should.be.eql(3)
+          console.log(res.body)
+          done()
+        })
+    })
+  })
+  mocha.describe('GET /files/data/other', () => {
+    mocha.it('should return a 404 error', (done) => {
+      chai.request(server)
+        .get('/files/data/other')
+        .end((_, res) => {
+          res.should.have.status(404)
           done()
         })
     })
