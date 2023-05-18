@@ -17,7 +17,7 @@ mocha.describe('CSV Formatter API', () => {
           res.should.to.be.json
           res.body.should.be.a('array')
           res.body.length.should.be.eql(3)
-          console.log(res.body)
+          res.body[0].should.have.all.keys('file', 'lines')
           done()
         })
     })
