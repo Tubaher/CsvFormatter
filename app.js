@@ -4,8 +4,12 @@ const path = require('path')
 // const cookieParser = require('cookie-parser')
 // const logger = require('morgan')
 const indexRouter = require('./src/routes/index')
-const app = express()
 
+// Cors
+const cors = require('cors')
+
+const app = express()
+app.use(cors())
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'))
 // app.set('view engine', 'jade')
