@@ -37,7 +37,7 @@ const parseLines = (csvData) => {
   }, [])
 }
 
-async function getSingleFile (fileName) {
+const getSingleFile = async (fileName) => {
   try {
     const response = await axios.get('/file/' + fileName)
     const csvData = csvParser.parse(response.data, { output: 'objects' })
@@ -46,7 +46,7 @@ async function getSingleFile (fileName) {
       file: fileName,
       lines: processedData
     }
-    return processedFile
+    return processedFile.lines.length !== 0 ? processedFile : {}
   } catch (error) {
     return {}
   }
